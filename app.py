@@ -19,11 +19,11 @@ def crete_cert(cn: str, req: str) -> str:
 
     run(["/etc/openvpn/server/easy-rsa/easyrsa", "--batch", "sign-req","client", cn], cwd="/etc/openvpn/server/easy-rsa")
 
+    inline = open(f"/etc/openvpn/server/easy-rsa/pki/inline/private/{cn}.inline", "r").read()
+
     config = config.replace("%REMOTE_HOST%", REMOTE_HOST)
     config = config.replace("%REMOTE_PORT%", REMOTE_PORT)
     config = config.replace("%INLINE%", inline)
-
-    inline = open(f"/etc/openvpn/server/easy-rsa/pki/inline/private/{cn}.inline", "r").read()
 
     path = f"./temp/{cn}.ovpn"
 
