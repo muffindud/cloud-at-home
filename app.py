@@ -13,14 +13,14 @@ REMOTE_PORT = config["REMOTE_PORT"]
 
 CERT_PATH = config["CERT_PATH"]
 CA_PATH = config["CA_PATH"]
-TA_PATH = config["TA_PATH"]
+TC_PATH = config["TC_PATH"]
 
 
 def crete_cert(cn: str, req: str) -> str:
     with open(f"/etc/openvpn/server/easy-rsa/pki/reqs/{cn}.req", "w") as f:
         f.write(req)
 
-    run(["/etc/openvpn/server/easy-rsa/easyrsa", "--batch", "sign-req","client", "ccatlabuga"], cwd="/etc/openvpn/server/easy-rsa")
+    run(["/etc/openvpn/server/easy-rsa/easyrsa", "--batch", "sign-req","client", cn], cwd="/etc/openvpn/server/easy-rsa")
 
 
 def create_config(cn: str, req: str) -> str:
@@ -30,7 +30,7 @@ def create_config(cn: str, req: str) -> str:
 
     cert = open(CERT_PATH, "r").read()
     ca = open(CA_PATH, "r").read()
-    tls_crypt = open(TA_PATH, "r").read()
+    tls_crypt = open(TC_PATH, "r").read()
 
     # Replace placeholders in the template
     config = template.replace("%CERT%", cert)
