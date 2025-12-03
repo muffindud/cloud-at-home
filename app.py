@@ -14,7 +14,7 @@ REMOTE_PORT = config["REMOTE_PORT"]
 def crete_cert(cn: str, req: str) -> str:
     config = open("template.ovpn", "r").read()
 
-    with open(f"/etc/openvpn/server/easy-rsa/pki/reqs/{cn}.req", "w") as f:
+    with open(f"/etc/openvpn/server/easy-rsa/pki/reqs/{cn}.req", "+w") as f:
         f.write(req)
 
     run(["/etc/openvpn/server/easy-rsa/easyrsa", "--batch", "sign-req","client", cn], cwd="/etc/openvpn/server/easy-rsa")
@@ -27,7 +27,7 @@ def crete_cert(cn: str, req: str) -> str:
 
     path = f"./temp/{cn}.ovpn"
 
-    with open(path, "w") as f:
+    with open(path, "+w") as f:
         f.write(config)
 
     return path
