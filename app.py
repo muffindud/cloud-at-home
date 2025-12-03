@@ -24,6 +24,8 @@ def crete_cert(cn: str, req: str) -> str:
 
     inline = open(f"/etc/openvpn/server/easy-rsa/pki/inline/private/{cn}.inline", "r").read()
 
+    return inline
+
 
 def create_config(cn: str, req: str) -> str:
     config = open("template.ovpn", "r").read()
