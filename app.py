@@ -22,22 +22,17 @@ def crete_cert(cn: str, req: str) -> str:
 
     run(["/etc/openvpn/server/easy-rsa/easyrsa", "--batch", "sign-req","client", cn], cwd="/etc/openvpn/server/easy-rsa")
 
+    inline = open(f"/etc/openvpn/server/easy-rsa/pki/inline/private/{cn}.inline", "r").read()
+
 
 def create_config(cn: str, req: str) -> str:
-    crete_cert(cn, req)
-
-    template = open("template.ovpn", "r").read()
-
-    cert = open(CERT_PATH, "r").read()
-    ca = open(CA_PATH, "r").read()
-    tls_crypt = open(TC_PATH, "r").read()
+    config = open("template.ovpn", "r").read()
+    inline = crete_cert(cn, req)
 
     # Replace placeholders in the template
-    config = template.replace("%CERT%", cert)
-    config = config.replace("%CA%", ca)
-    config = config.replace("%TLS_CRYPT%", tls_crypt)
     config = config.replace("%REMOTE_HOST%", REMOTE_HOST)
     config = config.replace("%REMOTE_PORT%", REMOTE_PORT)
+    config = config.replace("%INLINE%", inline)
 
     return config
 
@@ -56,4 +51,4 @@ def generate_vpn_config():
 
     config = create_config(cn, key)
 
-    return {"config": config}, 200
+    return config, 200
