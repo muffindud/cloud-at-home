@@ -8,7 +8,7 @@ from flask import Flask, request
 app = Flask(__name__)
 config = dotenv_values(".env")
 
-REMPOTE_HOST = config["REMPOTE_HOST"]
+REMOTE_HOST = config["REMOTE_HOST"]
 REMOTE_PORT = config["REMOTE_PORT"]
 
 CERT_PATH = config["CERT_PATH"]
@@ -36,7 +36,7 @@ def create_config(cn: str, req: str) -> str:
     config = template.replace("%CERT%", cert)
     config = config.replace("%CA%", ca)
     config = config.replace("%TLS_CRYPT%", tls_crypt)
-    config = config.replace("%REMOTE_HOST%", REMPOTE_HOST)
+    config = config.replace("%REMOTE_HOST%", REMOTE_HOST)
     config = config.replace("%REMOTE_PORT%", REMOTE_PORT)
 
     return config
