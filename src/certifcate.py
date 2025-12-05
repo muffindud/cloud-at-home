@@ -1,19 +1,12 @@
 from subprocess import run
 
-from dotenv import dotenv_values
-
-
-config = dotenv_values(".env")
-
-REMOTE_HOST = config["REMOTE_HOST"]
-REMOTE_PORT = config["REMOTE_PORT"]
-EASY_RSA_PATH = config["EASY_RSA_PATH"]
+from src.config import REMOTE_HOST, REMOTE_PORT, EASY_RSA_PATH
 
 
 def create_cert(cn: str, req: str) -> str:
     config = open("template.ovpn", "r").read()
 
-    with open(f"{EASY_RSA_PATH}/pki/reqs/{cn}.req", "+w") as f:
+    with open(f"{EASY_RSA_PATH}/pki/reqs/{cn}.req", "x") as f:
         f.write(req)
 
     run([f"{EASY_RSA_PATH}/easyrsa", "--batch", "sign-req", "client", cn], cwd=EASY_RSA_PATH)
