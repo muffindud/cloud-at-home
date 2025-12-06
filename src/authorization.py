@@ -3,10 +3,11 @@ import functools
 from flask import request
 
 
+def set_role(client_ip: str, role: str):
+    ...
+
+
 def get_role(client_ip: str) -> str:
-    if client_ip == "127.0.0.1":
-        return "admin"
-    return None
     ...
 
 
@@ -25,3 +26,17 @@ def vpn(roles=[]):
         return wrapper
 
     return decorator
+
+
+
+def iam(f):
+    @functools.wraps(f)
+    def wrapper(*args, **kwargs):
+        client_ip = request.remote_addr
+
+        # TODO: implement IAM logic
+        ...
+
+        return f(*args, **kwargs)
+
+    return wrapper
