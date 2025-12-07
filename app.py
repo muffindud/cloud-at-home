@@ -42,10 +42,23 @@ def connect():
 @iam
 def container():
     if request.method == "POST":
-        create_container()
+        response = create_container()
+        return response.content, response.status_code, response.headers.items()
+
     elif request.method == "DELETE":
-        delete_container()
+        uuid = request.args.get("uuid")
+        response = delete_container(uuid)
+        return response.content, response.status_code, response.headers.items()
+
     elif request.method == "GET":
-        get_container_info()
+        uuid = request.args.get("uuid")
+        response = get_container_info(uuid)
+        return response.content, response.status_code, response.headers.items()
+
     elif request.method == "PUT":
-        update_container()
+        response = update_container()
+        return response.content, response.status_code, response.headers.items()
+
+
+if __name__ == "__main__":
+    app.run()
