@@ -112,8 +112,46 @@ def get_container_info(uuid: str) -> Response:
     print(response.text)
     print(response.status_code)
 
-    return _send_response({"status": "ok", "data": response.json()}, 200)
+    network = get(
+        url=f"https://{PROXMOX_HOST}:{PROXMOX_PORT}/api2/json/nodes/{NODE}/lxc/{vmid}/interfaces",
+        headers={"Authorization": PROXMOX_KEY},
+        verify=False
+    )
 
+    print(network.text)
+    print(network.status_code)
+
+    ip_address = None
+    for interface in network.json().get("data", []):
+        if interface.get("name") == "eth0":
+            for ip_info in interface.get("ip-addresses", []):
+                if ip_info.get("ip-address-type") == "inet":
+                    ip_address = ip_info.get("ip-address")
+                    break
+
+    config_response = get(
+        f"https://{PROXMOX_HOST}:{PROXMOX_PORT}/api2/json/nodes/{NODE}/lxc/{vmid}/config",
+        headers={"Authorization": PROXMOX_KEY},
+        verify=False
+    )
+
+    print(config_response.text)
+    print(config_response.status_code)
+
+    config_data = config_response.json().get("data")
+
+    client_response = {
+        "status": response.json().get("data").get("data").get("status"),
+        "ip": ip_address,
+        "config": {
+            "ostype": config_data.get("ostype"),
+            "rootfs": config_data.get("rootfs"),
+            "memory": config_data.get("memory"),
+            "cores": config_data.get("cores")
+        }
+    }
+
+    return _send_response({"status": "ok", "data": client_response}, 200)
 
 def update_container(uuid: str) -> Response:
     if not get_has_access_rules(
