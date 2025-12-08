@@ -143,7 +143,7 @@ def get_container_info(uuid: str) -> Response:
     config_data = config_response.json().get("data")
 
     client_response = {
-        "status": response.json().get("data").get("data").get("status"),
+        "status": response.json().get("data").get("status"),
         "ip": ip_address,
         "config": {
             "ostype": config_data.get("ostype"),
