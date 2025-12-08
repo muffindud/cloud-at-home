@@ -28,11 +28,15 @@ def get_role(client_ip: str) -> str:
     return ROLE_MAPPINGS.get(client_ip)
 
 
-def get_has_access_rule(client_ip: str, resource_uuid: str, rule: str) -> bool:
+def get_has_access_rules(client_ip: str, resource_uuid: str, rules: list[str]) -> bool:
     resource_rules = RESOURCE_MAPPINGS.get(resource_uuid, {})
     client_rules = resource_rules.get(client_ip, [])
 
-    return rule in client_rules
+    for rule in rules:
+        if rule in client_rules:
+            return True
+
+    return False
 
 
 def add_access_rule(client_ip: str, resource_uuid: str, rule: str) -> None:

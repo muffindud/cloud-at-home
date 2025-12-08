@@ -5,19 +5,14 @@ from requests import Response, post, delete, get, put
 from flask import request
 
 from src.config import PROXMOX_HOST, PROXMOX_PORT, PROXMOX_KEY, NODE
-from src.authorization import get_has_access_rule, add_access_rule, remove_resource, get_vmid, get_unique_resource_vmid, set_vmid
+from src.authorization import get_has_access_rules, add_access_rule, remove_resource, get_vmid, get_unique_resource_vmid, set_vmid
 
 
 DEFAULT_OS_TEMPLATE = "local:vztmpl/ubuntu-25.04-standard_25.04-1.1_amd64.tar.zst"
 
 DATA_TEMPLATE = {
-    "vmid": "101",
     "ostemplate": DEFAULT_OS_TEMPLATE,
-    "password": "123456",
-    "cores": "2",
-    "memory": "2048",
     "swap": "512",
-    "rootfs": "local-lvm:8",
     "net0": "name=eth0,bridge=vmbr0,firewall=1"
 }
 
@@ -35,14 +30,24 @@ def send_unauthorized_response() -> Response:
 
 
 def create_container() -> Response:
+    data = request.json or {}
+    for key in ["cores", "ram", "rootfs", "ssh-public-key", "password"]:
+        if key not in data:
+            return _send_response({"error": f"{key} is required"}, 400)
+
     vmid = get_unique_resource_vmid()
-    data = DATA_TEMPLATE.copy()
-    data["vmid"] = vmid
+    container = DATA_TEMPLATE.copy()
+    container["vmid"] = vmid
+
+    container["cores"] = str(data["cores"])
+    container["memory"] = str(data["ram"])
+    container["rootfs"] = f"local-lvm:{data['rootfs']}"
+    container["ssh-public-keys"] = data["ssh-public-key"]
 
     response = post(
         url=f"https://{PROXMOX_HOST}:{PROXMOX_PORT}/api2/json/nodes/{NODE}/lxc",
         headers={"Authorization": PROXMOX_KEY},
-        data=data,
+        data=container,
         verify=False
     )
 
@@ -63,10 +68,10 @@ def create_container() -> Response:
 
 
 def delete_container(uuid: str) -> Response:
-    if not get_has_access_rule(
+    if not get_has_access_rules(
         client_ip=request.remote_addr,
         resource_uuid=uuid,
-        rule="admin"
+        rules=["admin"]
     ):
         return send_unauthorized_response()
 
@@ -88,10 +93,10 @@ def delete_container(uuid: str) -> Response:
 
 
 def get_container_info(uuid: str) -> Response:
-    if not get_has_access_rule(
+    if not get_has_access_rules(
         client_ip=request.remote_addr,
         resource_uuid=uuid,
-        rule="admin"
+        rules=["admin", "maintain", "read"]
     ):
         return send_unauthorized_response()
 
@@ -109,5 +114,41 @@ def get_container_info(uuid: str) -> Response:
     return _send_response({"status": "ok", "data": response.json()}, 200)
 
 
-def update_container() -> Response:
-    pass
+def update_container(uuid: str) -> Response:
+    if not get_has_access_rules(
+        client_ip=request.remote_addr,
+        resource_uuid=uuid,
+        rules=["admin", "maintain"]
+    ):
+        return send_unauthorized_response()
+
+    vmid = get_vmid(uuid)
+
+    data: dict = request.json or {}
+
+    if not "status" in data or data["status"] not in ["start", "stop", "reboot"]:
+        return _send_response({"error": "Status must be one of start, stop, reboot"}, 400)
+
+    if data["status"] == "start":
+        response = post(
+            url=f"https://{PROXMOX_HOST}:{PROXMOX_PORT}/api2/json/nodes/{NODE}/lxc/{vmid}/status/start",
+            headers={"Authorization": PROXMOX_KEY},
+            verify=False
+        )
+    elif data["status"] == "stop":
+        response = post(
+            url=f"https://{PROXMOX_HOST}:{PROXMOX_PORT}/api2/json/nodes/{NODE}/lxc/{vmid}/status/stop",
+            headers={"Authorization": PROXMOX_KEY},
+            verify=False
+        )
+    elif data["status"] == "reboot":
+        response = post(
+            url=f"https://{PROXMOX_HOST}:{PROXMOX_PORT}/api2/json/nodes/{NODE}/lxc/{vmid}/status/reboot",
+            headers={"Authorization": PROXMOX_KEY},
+            verify=False
+        )
+
+    print(response.text)
+    print(response.status_code)
+
+    return _send_response({"status": "updated"}, 200)
