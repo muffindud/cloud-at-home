@@ -122,8 +122,9 @@ def get_container_info(uuid: str) -> Response:
     print(network.status_code)
 
     ip_address = None
-    if network.json().get("data"):
-        for interface in network.json().get("data"):
+    network_body = network.json()
+    if network_body.get("data") is not None:
+        for interface in network_body.get("data"):
             if interface.get("name") == "eth0":
                 for ip_info in interface.get("ip-addresses", []):
                     if ip_info.get("ip-address-type") == "inet":
