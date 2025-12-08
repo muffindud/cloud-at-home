@@ -12,6 +12,7 @@ DEFAULT_OS_TEMPLATE = "local:vztmpl/ubuntu-25.04-standard_25.04-1.1_amd64.tar.zs
 
 DATA_TEMPLATE = {
     "ostemplate": DEFAULT_OS_TEMPLATE,
+    "features": "nesting=1",
     "swap": "512",
     "net0": "name=eth0,bridge=vmbr0,firewall=1,ip=dhcp,ip6=dhcp,type=veth",
 }
