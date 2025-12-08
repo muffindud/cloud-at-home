@@ -56,7 +56,8 @@ def container():
         return response.content, response.status_code, response.headers.items()
 
     elif request.method == "PUT":
-        response = update_container()
+        uuid = request.args.get("uuid")
+        response = update_container(uuid)
         return response.content, response.status_code, response.headers.items()
 
 
