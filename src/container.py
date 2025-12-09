@@ -6,7 +6,7 @@ from requests import Response, post, delete, get, put
 from flask import request
 
 from src.config import PROXMOX_HOST, PROXMOX_PORT, PROXMOX_KEY, NODE
-from src.authorization import get_has_access_rules, add_access_rule, remove_resource, get_vmid, get_unique_resource_vmid, set_vmid
+from src.authorization import get_has_access_rules, add_access_rule, remove_resource, get_vmid, get_unique_resource_vmid, set_vmid, get_containers_info
 
 
 DEFAULT_OS_TEMPLATE = "local:vztmpl/ubuntu-25.04-standard_25.04-1.1_amd64.tar.zst"
@@ -214,3 +214,8 @@ def update_container(uuid: str) -> Response:
     print(response.status_code)
 
     return _send_response({"status": "updated"}, 200)
+
+
+def get_containers() -> Response:
+    containers = get_containers_info()
+    return _send_response({"containers": containers}, 200)

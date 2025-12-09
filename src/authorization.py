@@ -63,6 +63,21 @@ def remove_access_rule(client_ip: str, resource_uuid: str, rule: str) -> None:
         f.write(dumps(RESOURCE_MAPPINGS))
 
 
+def get_containers_info() -> dict:
+    containers_info = []
+
+    for resource_uuid, access_info in RESOURCE_MAPPINGS.items():
+        vmid = get_vmid(resource_uuid)
+        access = access_info.get(request.remote_addr, [])
+
+        containers_info.append({
+            "uuid": resource_uuid,
+            "access_rules": access
+        })
+
+    return containers_info
+
+
 def set_vmid(uuid: str, vmid: str) -> None:
     if uuid not in RESOURCE_MAPPINGS:
         RESOURCE_MAPPINGS[uuid] = {}

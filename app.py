@@ -5,7 +5,7 @@ from flask import Flask, request, send_file
 from src.authorization import vpn, iam
 from src.certifcate import create_cert
 from src.config import EASY_RSA_PATH
-from src.container import create_container, delete_container, get_container_info, update_container
+from src.container import create_container, delete_container, get_container_info, update_container, get_containers
 
 
 app = Flask(__name__)
@@ -59,6 +59,13 @@ def container():
         uuid = request.args.get("uuid")
         response = update_container(uuid)
         return response.content, response.status_code, response.headers.items()
+
+
+# Get the containers and the permission of the client IP
+@app.route("/containers", methods=["GET"])
+def containers():
+    response = get_containers()
+    return response.content, response.status_code, response.headers.items()
 
 
 if __name__ == "__main__":
